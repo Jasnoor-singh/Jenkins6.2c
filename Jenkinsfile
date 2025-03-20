@@ -8,7 +8,15 @@ pipeline {
     environment {
         JAVA_HOME = "/usr/lib/jvm/java-21-openjdk-amd64"
         MAVEN_HOME = "/usr/share/maven"
-        EMAIL_RECIPIENTS = "singhjasnoor618@gmail.com"
+        AWS_CLI_PATH = "/usr/bin"
+        PATH = "${JAVA_HOME}/bin:${MAVEN_HOME}/bin:${AWS_CLI_PATH}:$PATH"
+        SONARQUBE_CREDENTIALS = 'sonarqube'
+        S3_BUCKET = 'mypipelinebucket'
+        APP_NAME = 'aiverse'
+        ENV_NAME = 'Aiverse-env'
+        STAGING_ENV_NAME = 'Aiverse-staging-env'
+        STAGING_URL = "http://Aiverse-env.eba-7mcmvxh3.eu-north-1.elasticbeanstalk.com"
+        EMAIL_RECIPIENTS = "1999manmeetkaur@gmail.com"
     }
 
     stages {
