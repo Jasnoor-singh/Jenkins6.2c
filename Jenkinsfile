@@ -22,7 +22,7 @@ pipeline {
             steps {
                 echo 'Building the application...'
                 // Use Maven to compile and package your application
-                sh 'mvn clean package'
+               // sh 'mvn clean package'
             }
         }
 
