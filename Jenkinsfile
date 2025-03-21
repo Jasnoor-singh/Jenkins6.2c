@@ -1,5 +1,8 @@
 pipeline {
     agent any
+    triggers {
+        githubPush()  
+    }
 
     environment {
         // Update these with your actual staging/production server addresses.
