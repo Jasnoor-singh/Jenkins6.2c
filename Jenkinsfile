@@ -2,7 +2,12 @@ pipeline {
     agent any
 
     environment {
-        EMAIL_RECIPIENT = "singhjasnoor618@gmail.com"
+        // Update these with your actual staging/production server addresses.
+        // For example, using your EC2 instance's public DNS:
+        STAGING_SERVER = "ubuntu@ec2-16-170-159-223.eu-north-1.compute.amazonaws.com"
+        PRODUCTION_SERVER = "ubuntu@<production-instance-public-dns>"
+        // Update with your notification email address.
+        EMAIL_RECIPIENT = "your-email@example.com"
     }
 
     stages {
