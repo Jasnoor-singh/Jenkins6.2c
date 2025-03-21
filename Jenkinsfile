@@ -1,18 +1,28 @@
 pipeline {
     agent any
 
+    // Define environment variables for your servers and email.
+    // These values should be updated with your actual staging/production addresses and email.
     environment {
-        STAGING_SERVER = "ubuntu@<staging-ec2-ip>"
-        PRODUCTION_SERVER = "ubuntu@<production-ec2-ip>"
-        SSH_CREDENTIALS_ID = "your-ssh-credentials-id"
-        EMAIL_RECIPIENT = "singhjasnoor618@gmail.com"
+        STAGING_SERVER = "ubuntu@ec2-16-170-159-223.eu-north-1.compute.amazonaws.com"       // Replace with your staging server
+        PRODUCTION_SERVER = "ubuntu@<production-instance-public-dns>"   // Replace with your production server
+        EMAIL_RECIPIENT = "singhjasnoor618@gmail.com"            // Replace with your email address
     }
 
     stages {
 
+        stage('Checkout') {
+            steps {
+                // Use the default SCM configured in Jenkins.
+                // Assumes that your GitHub token is set up in the Jenkins job's SCM configuration.
+                checkout scm
+            }
+        }
+
         stage('Build') {
             steps {
                 echo 'Building the application...'
+                // Using Maven to compile and package the code.
                 sh 'mvn clean package'
             }
         }
@@ -24,9 +34,11 @@ pipeline {
             }
             post {
                 always {
-                    mail bcc: '', body: "Unit and Integration Tests completed.\nStatus: ${currentBuild.currentResult}",
-                         from: '', replyTo: '', subject: "Test Stage: ${currentBuild.currentResult}",
-                         to: "${env.EMAIL_RECIPIENT}",
+                    // Send email notification after tests stage.
+                    // Jenkins Email Extension Plugin should be configured in Jenkins.
+                    mail to: "${env.EMAIL_RECIPIENT}",
+                         subject: "Test Stage: ${currentBuild.currentResult}",
+                         body: "Unit and Integration tests completed with status: ${currentBuild.currentResult}",
                          attachLog: true
                 }
             }
@@ -34,8 +46,9 @@ pipeline {
 
         stage('Code Analysis') {
             steps {
-                echo 'Performing code analysis with SonarQube...'
-                withSonarQubeEnv('My SonarQube Server') {
+                echo 'Running code analysis using SonarQube...'
+                // Assumes you have configured a SonarQube server in Jenkins with the name 'SonarQube'
+                withSonarQubeEnv('SonarQube') {
                     sh 'mvn sonar:sonar'
                 }
             }
@@ -44,13 +57,15 @@ pipeline {
         stage('Security Scan') {
             steps {
                 echo 'Running security scan using OWASP Dependency-Check...'
-                sh 'dependency-check.sh --project MyApp --scan ./'
+                // Adjust this command if necessary for your project.
+                sh 'dependency-check.sh --project MyApp --scan .'
             }
             post {
                 always {
-                    mail bcc: '', body: "Security Scan completed.\nStatus: ${currentBuild.currentResult}",
-                         from: '', replyTo: '', subject: "Security Scan: ${currentBuild.currentResult}",
-                         to: "${env.EMAIL_RECIPIENT}",
+                    // Send email notification after security scan stage.
+                    mail to: "${env.EMAIL_RECIPIENT}",
+                         subject: "Security Scan: ${currentBuild.currentResult}",
+                         body: "Security scan completed with status: ${currentBuild.currentResult}",
                          attachLog: true
                 }
             }
@@ -58,29 +73,28 @@ pipeline {
 
         stage('Deploy to Staging') {
             steps {
-                echo 'Deploying to staging environment...'
-                sshagent([env.SSH_CREDENTIALS_ID]) {
-                    sh "scp target/*.jar ${STAGING_SERVER}:/home/ubuntu/app.jar"
-                    sh "ssh ${STAGING_SERVER} 'nohup java -jar /home/ubuntu/app.jar > /dev/null 2>&1 &'"
-                }
+                echo 'Deploying application to staging environment...'
+                // Deploy the built JAR file to the staging server.
+                // Since SSH keys are already configured in Jenkins, no credentials block is needed.
+                sh "scp target/*.jar ${STAGING_SERVER}:/home/ubuntu/app.jar"
+                sh "ssh ${STAGING_SERVER} 'nohup java -jar /home/ubuntu/app.jar > /dev/null 2>&1 &'"
             }
         }
 
         stage('Integration Tests on Staging') {
             steps {
-                echo 'Running integration tests on staging server...'
-                // Add your integration test script or command here
-                sh 'curl -I http://<staging-ec2-ip>:8080'
+                echo 'Running integration tests on staging...'
+                // This is a simple example. You can replace it with a more robust integration test suite.
+                sh 'curl -I http://staging.example.com:8080'
             }
         }
 
         stage('Deploy to Production') {
             steps {
-                echo 'Deploying to production environment...'
-                sshagent([env.SSH_CREDENTIALS_ID]) {
-                    sh "scp target/*.jar ${PRODUCTION_SERVER}:/home/ubuntu/app.jar"
-                    sh "ssh ${PRODUCTION_SERVER} 'nohup java -jar /home/ubuntu/app.jar > /dev/null 2>&1 &'"
-                }
+                echo 'Deploying application to production environment...'
+                // Deploy the built JAR file to the production server.
+                sh "scp target/*.jar ${PRODUCTION_SERVER}:/home/ubuntu/app.jar"
+                sh "ssh ${PRODUCTION_SERVER} 'nohup java -jar /home/ubuntu/app.jar > /dev/null 2>&1 &'"
             }
         }
     }
