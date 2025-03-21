@@ -13,7 +13,7 @@ pipeline {
 
         stage('Checkout') {
             steps {
-                // Checkout code from GitHub using the Jenkins job’s SCM configuration (which uses your GitHub token)
+                // Checkout cod from GitHub using the Jenkins job’s SCM configuration (which uses your GitHub token)
                 checkout scm
             }
         }
