@@ -8,7 +8,7 @@ pipeline {
     environment {
         STAGING_SERVER    = "ubuntu@<staging-ec2-ip>"
         PRODUCTION_SERVER = "ubuntu@<production-instance-public-dns>"
-        EMAIL_RECIPIENT   = "singhjasnoor1421@gmail.com"
+        EMAIL_RECIPIENT   = "singhjasnoor618@gmail.com"
     }
 
     stages {
