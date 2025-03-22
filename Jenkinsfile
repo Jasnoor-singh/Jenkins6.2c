@@ -1,22 +1,28 @@
 pipeline {
     agent any
 
+    // Automatically trigger the pipeline on a GitHub push.
     triggers {
         githubPush()
     }
 
+    // Use the NodeJS tool defined in Global Tool Configuration.
+    tools {
+        nodejs 'NodeJS'
+    }
+
     environment {
-        // Update these with your actual server addresses and email.
-        STAGING_SERVER     = "ubuntu@ec2-16-170-159-223.eu-north-1.compute.amazonaws.com"
-        PRODUCTION_SERVER  = "ubuntu@<production-instance-public-dns>"
-        EMAIL_RECIPIENT    = "singhjasnoor618@gmail.com"
+        // Replace these with your actual server addresses.
+        STAGING_SERVER    = "ubuntu@ec2-16-170-159-223.eu-north-1.compute.amazonaws.com"
+        PRODUCTION_SERVER = "ubuntu@<production-instance-public-dns>"
+        EMAIL_RECIPIENT   = "singhjasnoor1421@gmail.com"
     }
 
     stages {
 
         stage('Checkout') {
             steps {
-                // Uses Jenkins's SCM settings with your GitHub token.
+                // Uses the Jenkins job's SCM settings (with your GitHub token).
                 checkout scm
             }
         }
@@ -24,27 +30,22 @@ pipeline {
         stage('Install Dependencies') {
             steps {
                 echo 'Installing dependencies for React project...'
-                // Use the NodeJS tool configured in Jenkins.
-                // Ensure that "NodeJS" is configured in Global Tool Configuration.
-                def nodeHome = tool name: 'NodeJS', type: 'jenkins.plugins.nodejs.tools.NodeJSInstallation'
-                sh "${nodeHome}/bin/npm install"
+                // With NodeJS installed via the tools block, npm is available.
+                sh 'npm install'
             }
         }
 
         stage('Build') {
             steps {
                 echo 'Building the React application...'
-                def nodeHome = tool name: 'NodeJS', type: 'jenkins.plugins.nodejs.tools.NodeJSInstallation'
-                sh "${nodeHome}/bin/npm run build"
+                sh 'npm run build'
             }
         }
 
         stage('Test') {
             steps {
                 echo 'Running tests...'
-                def nodeHome = tool name: 'NodeJS', type: 'jenkins.plugins.nodejs.tools.NodeJSInstallation'
-                // Adjust the test command if needed.
-                sh "${nodeHome}/bin/npm test"
+                sh 'npm test'
             }
             post {
                 always {
@@ -60,17 +61,15 @@ pipeline {
         stage('Code Analysis') {
             steps {
                 echo 'Running code analysis (e.g., ESLint)...'
-                def nodeHome = tool name: 'NodeJS', type: 'jenkins.plugins.nodejs.tools.NodeJSInstallation'
-                // Example ESLint command; adjust according to your configuration.
-                sh "${nodeHome}/bin/npm run lint"
+                // Uncomment and adjust if you have a lint script:
+                // sh 'npm run lint'
             }
         }
 
         stage('Security Scan') {
             steps {
                 echo 'Running security scan (e.g., npm audit)...'
-                def nodeHome = tool name: 'NodeJS', type: 'jenkins.plugins.nodejs.tools.NodeJSInstallation'
-                sh "${nodeHome}/bin/npm audit"
+                sh 'npm audit'
             }
             post {
                 always {
@@ -86,23 +85,23 @@ pipeline {
         stage('Deploy to Staging') {
             steps {
                 echo 'Deploying to staging environment...'
-                // For real deployment, use scp/ssh commands.
+                // Simulate deployment. Replace with real commands if available.
                 sh "echo 'Deploying app to staging server: ${STAGING_SERVER}'"
             }
         }
 
         stage('Integration Tests on Staging') {
             steps {
-                echo 'Running integration tests on staging...'
-                // For example, checking HTTP response from the staging server.
-                sh "echo 'Simulating integration tests on staging'"
+                echo 'Running integration tests on staging environment...'
+                // For example, simulate integration tests by checking an HTTP response:
+                // sh 'curl -I http://<staging-instance-public-ip>:3000'
             }
         }
 
         stage('Deploy to Production') {
             steps {
                 echo 'Deploying to production environment...'
-                // For real deployment, use scp/ssh commands.
+                // Simulate production deployment. Replace with your real deployment commands.
                 sh "echo 'Deploying app to production server: ${PRODUCTION_SERVER}'"
             }
         }
