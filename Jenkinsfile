@@ -1,23 +1,22 @@
 pipeline {
     agent any
 
-    // Automatically trigger this pipeline whenever there's a push to the GitHub repository.
     triggers {
         githubPush()
     }
 
     environment {
-        // Example: If you deploy somewhere, put the server addresses here.
-        STAGING_SERVER    = "ubuntu@ec2-16-170-159-223.eu-north-1.compute.amazonaws.com"
-        PRODUCTION_SERVER = "ubuntu@<production-instance-public-dns>"
-        EMAIL_RECIPIENT   = "singhjasnoor1421@gmail.com"
+        // Update these with your actual server addresses and email.
+        STAGING_SERVER     = "ubuntu@ec2-16-170-159-223.eu-north-1.compute.amazonaws.com"
+        PRODUCTION_SERVER  = "ubuntu@<production-instance-public-dns>"
+        EMAIL_RECIPIENT    = "singhjasnoor1421@gmail.com"
     }
 
     stages {
 
         stage('Checkout') {
             steps {
-                // Pull code from GitHub using the job's SCM configuration (GitHub token).
+                // Uses Jenkins's SCM settings with your GitHub token.
                 checkout scm
             }
         }
@@ -25,30 +24,34 @@ pipeline {
         stage('Install Dependencies') {
             steps {
                 echo 'Installing dependencies for React project...'
-                // Assumes package.json is in the repo root. 
-                sh 'npm install'
+                // Use the NodeJS tool configured in Jenkins.
+                // Ensure that "NodeJS" is configured in Global Tool Configuration.
+                def nodeHome = tool name: 'NodeJS', type: 'jenkins.plugins.nodejs.tools.NodeJSInstallation'
+                sh "${nodeHome}/bin/npm install"
             }
         }
 
         stage('Build') {
             steps {
                 echo 'Building the React application...'
-                sh 'npm run build'
+                def nodeHome = tool name: 'NodeJS', type: 'jenkins.plugins.nodejs.tools.NodeJSInstallation'
+                sh "${nodeHome}/bin/npm run build"
             }
         }
 
         stage('Test') {
             steps {
                 echo 'Running tests...'
-                // Your React test command:
-                sh 'npm test'
+                def nodeHome = tool name: 'NodeJS', type: 'jenkins.plugins.nodejs.tools.NodeJSInstallation'
+                // Adjust the test command if needed.
+                sh "${nodeHome}/bin/npm test"
             }
             post {
                 always {
-                    emailext (
+                    emailext(
                         to: "${env.EMAIL_RECIPIENT}",
                         subject: "React App Tests: ${currentBuild.currentResult}",
-                        body: "Tests finished with status: ${currentBuild.currentResult}"
+                        body: "Tests completed with status: ${currentBuild.currentResult}"
                     )
                 }
             }
@@ -56,24 +59,25 @@ pipeline {
 
         stage('Code Analysis') {
             steps {
-                echo 'Running code analysis... (e.g., ESLint)'
-                // Example: ESLint check
-                // sh 'npm run lint'
+                echo 'Running code analysis (e.g., ESLint)...'
+                def nodeHome = tool name: 'NodeJS', type: 'jenkins.plugins.nodejs.tools.NodeJSInstallation'
+                // Example ESLint command; adjust according to your configuration.
+                sh "${nodeHome}/bin/npm run lint"
             }
         }
 
         stage('Security Scan') {
             steps {
-                echo 'Running security scan... (e.g., npm audit)'
-                // Example: npm audit
-                // sh 'npm audit'
+                echo 'Running security scan (e.g., npm audit)...'
+                def nodeHome = tool name: 'NodeJS', type: 'jenkins.plugins.nodejs.tools.NodeJSInstallation'
+                sh "${nodeHome}/bin/npm audit"
             }
             post {
                 always {
-                    emailext (
+                    emailext(
                         to: "${env.EMAIL_RECIPIENT}",
                         subject: "Security Scan: ${currentBuild.currentResult}",
-                        body: "Security scan finished with status: ${currentBuild.currentResult}"
+                        body: "Security scan completed with status: ${currentBuild.currentResult}"
                     )
                 }
             }
@@ -82,24 +86,24 @@ pipeline {
         stage('Deploy to Staging') {
             steps {
                 echo 'Deploying to staging environment...'
-                // Example simulation: 
-                sh "echo 'Would SCP or SSH to ${STAGING_SERVER}'"
+                // For real deployment, use scp/ssh commands.
+                sh "echo 'Deploying app to staging server: ${STAGING_SERVER}'"
             }
         }
 
         stage('Integration Tests on Staging') {
             steps {
-                echo 'Running integration tests on staging environment...'
-                // For real integration tests: 
-                // sh 'curl -I http://<staging-instance-public-ip>:3000'
+                echo 'Running integration tests on staging...'
+                // For example, checking HTTP response from the staging server.
+                sh "echo 'Simulating integration tests on staging'"
             }
         }
 
         stage('Deploy to Production') {
             steps {
                 echo 'Deploying to production environment...'
-                // Example simulation:
-                sh "echo 'Would SCP or SSH to ${PRODUCTION_SERVER}'"
+                // For real deployment, use scp/ssh commands.
+                sh "echo 'Deploying app to production server: ${PRODUCTION_SERVER}'"
             }
         }
     }
