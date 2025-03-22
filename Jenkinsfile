@@ -9,7 +9,7 @@ pipeline {
         // Update these with your actual server addresses and email.
         STAGING_SERVER     = "ubuntu@ec2-16-170-159-223.eu-north-1.compute.amazonaws.com"
         PRODUCTION_SERVER  = "ubuntu@<production-instance-public-dns>"
-        EMAIL_RECIPIENT    = "singhjasnoor1421@gmail.com"
+        EMAIL_RECIPIENT    = "singhjasnoor618@gmail.com"
     }
 
     stages {
