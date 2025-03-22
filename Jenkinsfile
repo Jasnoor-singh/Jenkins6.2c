@@ -1,11 +1,13 @@
 pipeline {
-    // Trigger the pipeline automatically on GitHub pushes.
+    agent any
+
+    // Automatically trigger on every GitHub push.
     triggers {
         githubPush()
     }
 
     environment {
-        // Example environment variables for staging/production & emails.
+        // These can be updated to reflect your environment if needed.
         STAGING_SERVER    = "ubuntu@ec2-16-170-159-223.eu-north-1.compute.amazonaws.com"
         PRODUCTION_SERVER = "ubuntu@<production-instance-public-dns>"
         EMAIL_RECIPIENT   = "singhjasnoor1421@gmail.com"
@@ -15,38 +17,37 @@ pipeline {
 
         stage('Checkout') {
             steps {
-                // Pulls your code from GitHub using Jenkins job's SCM config (GitHub token).
+                // Pull code from your GitHub repo using the job's SCM config.
                 checkout scm
             }
         }
 
         stage('Install Dependencies') {
             steps {
-                echo 'Installing dependencies for React project...'
-                // node:18-alpine Docker image includes npm by default.
-                sh 'npm install'
+                echo 'Simulating dependency installation... (No real commands here)'
+                // e.g., "sh 'npm install'" if you had a Node project
             }
         }
 
         stage('Build') {
             steps {
-                echo 'Building the React application...'
-                sh 'npm run build'
+                echo 'Simulating build step...'
+                // e.g., "sh 'mvn clean package'" or "sh 'npm run build'"
             }
         }
 
         stage('Test') {
             steps {
-                echo 'Running tests...'
-                // Typical React test command
-                sh 'npm test'
+                echo 'Simulating test step...'
+                // e.g., "sh 'mvn test'" or "sh 'npm test'"
             }
             post {
                 always {
+                    // Send an email notification at the end of the test stage
                     emailext(
                         to: "${env.EMAIL_RECIPIENT}",
-                        subject: "React App Tests: ${currentBuild.currentResult}",
-                        body: "Tests finished with status: ${currentBuild.currentResult}"
+                        subject: "Test Stage: ${currentBuild.currentResult}",
+                        body: "Tests completed with status: ${currentBuild.currentResult}"
                     )
                 }
             }
@@ -54,19 +55,17 @@ pipeline {
 
         stage('Code Analysis') {
             steps {
-                echo 'Running code analysis (e.g. ESLint)...'
-                // Example command:
-                // sh 'npm run lint'
+                echo 'Simulating code analysis (SonarQube/ESLint/etc.)...'
             }
         }
 
         stage('Security Scan') {
             steps {
-                echo 'Running security scan (e.g. npm audit)...'
-                // sh 'npm audit'
+                echo 'Simulating security scan (OWASP Dependency-Check/npm audit/etc.)...'
             }
             post {
                 always {
+                    // Send an email notification at the end of the security scan
                     emailext(
                         to: "${env.EMAIL_RECIPIENT}",
                         subject: "Security Scan: ${currentBuild.currentResult}",
@@ -78,26 +77,22 @@ pipeline {
 
         stage('Deploy to Staging') {
             steps {
-                echo 'Deploying to staging environment...'
-                // Placeholder for real deployment. For instance:
-                // sh "scp -r build/* ${STAGING_SERVER}:/var/www/react-app"
-                // sh "ssh ${STAGING_SERVER} 'sudo systemctl restart nginx'"
-                sh "echo 'Would deploy to staging server: ${STAGING_SERVER}'"
+                echo 'Simulating deployment to staging environment...'
+                // e.g., "sh 'scp build/* ${STAGING_SERVER}:/var/www/myapp'"
             }
         }
 
         stage('Integration Tests on Staging') {
             steps {
-                echo 'Performing integration tests on staging environment...'
-                // Example: sh 'curl -I http://<staging-server-public-ip>:3000'
+                echo 'Simulating integration tests on staging environment...'
+                // e.g., "sh 'curl -I http://<staging-instance-ip>:3000'"
             }
         }
 
         stage('Deploy to Production') {
             steps {
-                echo 'Deploying to production environment...'
-                // Placeholder for real production deployment.
-                sh "echo 'Would deploy to production server: ${PRODUCTION_SERVER}'"
+                echo 'Simulating final deployment to production...'
+                // e.g., "sh 'scp build/* ${PRODUCTION_SERVER}:/var/www/myapp'"
             }
         }
     }
